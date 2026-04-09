@@ -25,7 +25,7 @@ def showLiveFrame(device):
                 print("Unable to capture image")
                 continue
             img = cv.resize(img,(1280,720))
-            (x1,y1),(x2,y2) = draw_centered_rectangle(img,color=(255,255,255),size=(300,150),thickness=2)
+            (x1,y1),(x2,y2) = draw_centered_rectangle(img,color=(255,255,255),size=(300,200),thickness=2)
             cv.imshow("live-feed", img)
             cv.waitKey(1) #delay=1, smallest delays
     except KeyboardInterrupt:
@@ -79,6 +79,24 @@ def focus_target_area(image,rect_pos):
     pass
 
 
+def get_px_rows(image,n):
+    rows = []
+    start = len(image) // 2 - (n // 2)
+    end = len(image) // 2 + (n // 2)
+    for i in range(start,end+1):
+        rows.append(img[i])
+    return rows
+
+
+def rotate_image(image, angle):
+    import numpy as np
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rot_mat = cv.getRotationMatrix2D(image_center, angle, 1.0)
+    result = cv.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv.INTER_LINEAR)
+    return result
+
+
+"""
 print("Making video device object...",end="")
 dev = cv.VideoCapture(0)
 print("DONE")
@@ -90,5 +108,17 @@ print("DONE")
 print("Capturing images...",end="")
 capture_and_save_image(dev,rpos=((x1,y1),(x2,y2)),n=1)
 print("DONE")
+"""
+cv.namedWindow("ex")
+img = cv.imread("0.png", cv.IMREAD_GRAYSCALE)
+img = rotate_image(img, -90)
+img = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
+            cv.THRESH_BINARY,11,2)
+cv.imshow("ex", img)
+
+rows = get_px_rows(img,3)
+for row in rows:
+    print(row[40:60],"...",row[-60:-40])
+cv.waitKey(0)        
 
 
