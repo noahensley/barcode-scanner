@@ -96,7 +96,7 @@ def rotate_image(image, angle):
     return result
 
 
-"""
+
 print("Making video device object...",end="")
 dev = cv.VideoCapture(0)
 print("DONE")
@@ -108,11 +108,11 @@ print("DONE")
 print("Capturing images...",end="")
 capture_and_save_image(dev,rpos=((x1,y1),(x2,y2)),n=1)
 print("DONE")
-"""
+
 cv.namedWindow("ex")
 img = cv.imread("0.png", cv.IMREAD_GRAYSCALE)
-img = rotate_image(img, -90)
-img = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
+#img = rotate_image(img, -90)
+img = cv.adaptiveThreshold(img,150,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
             cv.THRESH_BINARY,11,2)
 cv.imshow("ex", img)
 
