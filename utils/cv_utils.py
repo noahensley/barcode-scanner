@@ -110,11 +110,36 @@ capture_and_save_image(dev,rpos=((x1,y1),(x2,y2)),n=1)
 print("DONE")
 
 cv.namedWindow("ex")
+
+"""
 img = cv.imread("0.png", cv.IMREAD_GRAYSCALE)
+
+
 #img = rotate_image(img, -90)
-img = cv.adaptiveThreshold(img,150,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
-            cv.THRESH_BINARY,11,2)
+img = cv.medianBlur(img, 5)
+
+(thresh, blackAndWhite) = cv.threshold(img, 127, 255, cv.THRESH_BINARY) 
 cv.imshow("ex", img)
+cv.imshow("ex2", blackAndWhite)
+"""
+
+
+
+### sobel, otsu, blur
+cv.namedWindow("ex")
+img = cv.imread("0.png", cv.IMREAD_GRAYSCALE)
+img = cv.medianBlur(img, 5)
+sobelx = cv.Sobel(img, cv.CV_64F, 1, 0, ksize=5)
+#sobely = cv.Sobel(img, cv.CV_64F, 0, 1, ksize=5)
+
+"""
+sobelx_8u = cv.convertScaleAbs(sobelx)
+sobely_8u = cv.convertScaleAbs(sobely)
+"""
+
+cv.imshow("ex3", sobelx)
+
+
 
 rows = get_px_rows(img,3)
 for row in rows:

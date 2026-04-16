@@ -1,4 +1,4 @@
-
+#consider changing format to 0 = black, 1 = white 
 EAN_LOOKUP = {
 "LG" : {
     (3,2,1,1) : "0",
