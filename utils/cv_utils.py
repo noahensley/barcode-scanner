@@ -12,7 +12,7 @@ cv.putText(img, "OpenCV OK", (10, 80), cv.FONT_HERSHEY_SIMPLEX, 2, (255,255,255)
 cv.imwrite("hello.png", img)
 """
 RESOLUTION = (1280,720)
-CROP_RECTANGLE = RESOLUTION
+CROP_RECTANGLE = (RESOLUTION[0]//2,RESOLUTION[1]//2)
 
 
 def showLiveFrame(device,resolution=RESOLUTION):
@@ -27,7 +27,7 @@ def showLiveFrame(device,resolution=RESOLUTION):
                 print("Unable to capture image")
                 continue
             img = cv.resize(img,resolution)
-            (x1,y1),(x2,y2) = draw_centered_rectangle(img,color=(255,255,255),size=(RESOLUTION[0]//2,RESOLUTION[1]//2),thickness=2)
+            (x1,y1),(x2,y2) = draw_centered_rectangle(img,color=(255,255,255),size=CROP_RECTANGLE,thickness=2)
             cv.imshow("live-feed", img)
             cv.waitKey(1) #delay=1, smallest delays
     except KeyboardInterrupt:
@@ -53,7 +53,7 @@ def capture_images(device:cv.VideoCapture, rpos, n=1, resolution=RESOLUTION):
             #print(f"Cropping image to ({x1},{y1}),({x2},{y2})")
             img = cv.resize(img, resolution)
             img = img[y1:y2, x1:x2] #crop image
-            img = process_image(img)
+            #img = process_image(img)
             images.append(img)
             cv.imwrite(f"{counter}.png", img)
             counter += 1
@@ -67,12 +67,8 @@ def capture_images(device:cv.VideoCapture, rpos, n=1, resolution=RESOLUTION):
 
 def process_image(image):
     image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-
-    #blur = cv.GaussianBlur(image, (5, 5), 1.4)
- 
-    # Apply Canny Edge Detector
-    image = cv.Canny(image, threshold1=100, threshold2=200)
-
+    image = cv.adaptiveThreshold(image,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
+            cv.THRESH_BINARY,11,2)
     return image
     
 
@@ -143,10 +139,5 @@ print("Capturing images...",end="")
 images = capture_images(dev,rpos=((x1,y1),(x2,y2)),n=3,resolution=RESOLUTION)
 print("DONE")
 
-print("Orienting images...")
-for i in range(len(images)):
-    images[i] = orient(images[i])
-
 cv.waitKey(0)        
-
 
