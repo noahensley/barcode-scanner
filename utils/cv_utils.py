@@ -66,10 +66,9 @@ def capture_images(device:cv.VideoCapture, rpos, n=1, resolution=RESOLUTION):
     
 
 def process_image(image):
-    image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-    image = cv.adaptiveThreshold(image,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
-            cv.THRESH_BINARY,11,2)
-    return image
+    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    ret, thresh = cv.threshold(gray, 200, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    return thresh
     
 
 def draw_centered_rectangle(image,color,size,thickness):
