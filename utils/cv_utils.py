@@ -11,11 +11,9 @@ cv.putText(img, "OpenCV OK", (10, 80), cv.FONT_HERSHEY_SIMPLEX, 2, (255,255,255)
 # Always safe (headless or not): save to file
 cv.imwrite("hello.png", img)
 """
-RESOLUTION = (1280,720)
-CROP_RECTANGLE = RESOLUTION
 
 
-def showLiveFrame(device,resolution=RESOLUTION):
+def showLiveFrame(device):
     """
     Captures and a frame using a passed VideoCapture device and displays in a window.
     """
@@ -26,8 +24,8 @@ def showLiveFrame(device,resolution=RESOLUTION):
             if not ret:
                 print("Unable to capture image")
                 continue
-            img = cv.resize(img,resolution)
-            (x1,y1),(x2,y2) = draw_centered_rectangle(img,color=(255,255,255),size=(RESOLUTION[0]//2,RESOLUTION[1]//2),thickness=2)
+            img = cv.resize(img,(1280,720))
+            (x1,y1),(x2,y2) = draw_centered_rectangle(img,color=(255,255,255),size=(300,200),thickness=2)
             cv.imshow("live-feed", img)
             cv.waitKey(1) #delay=1, smallest delays
     except KeyboardInterrupt:
@@ -36,7 +34,7 @@ def showLiveFrame(device,resolution=RESOLUTION):
         print(f"Drew rectangle at ({x1},{y1}),({x2},{y2})")
         return (x1,y1),(x2,y2)
 
-def capture_images(device:cv.VideoCapture, rpos, n=1, resolution=RESOLUTION):
+def capture_and_save_image(device, rpos, n=1, resolution=(1280,720)):
     """
     Captures n images using passed VideoCapture device and saves them.
     :returns: a list of the saved image Objects
@@ -50,10 +48,9 @@ def capture_images(device:cv.VideoCapture, rpos, n=1, resolution=RESOLUTION):
                 print("Unable to capture image")
                 continue
             x1,y1,x2,y2 = rpos[0][0],rpos[0][1],rpos[1][0],rpos[1][1]
-            #print(f"Cropping image to ({x1},{y1}),({x2},{y2})")
+            print(f"Cropping image to ({x1},{y1}),({x2},{y2})")
             img = cv.resize(img, resolution)
-            img = img[y1:y2, x1:x2] #crop image
-            img = process_image(img)
+            img = img[y1:y2, x1:x2] #crop image      
             images.append(img)
             cv.imwrite(f"{counter}.png", img)
             counter += 1
@@ -63,17 +60,6 @@ def capture_images(device:cv.VideoCapture, rpos, n=1, resolution=RESOLUTION):
     finally:
         device.release()
         return images
-    
-
-def process_image(image):
-    image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-
-    #blur = cv.GaussianBlur(image, (5, 5), 1.4)
- 
-    # Apply Canny Edge Detector
-    image = cv.Canny(image, threshold1=100, threshold2=200)
-
-    return image
     
 
 def draw_centered_rectangle(image,color,size,thickness):
@@ -98,29 +84,8 @@ def get_px_rows(image,n):
     start = len(image) // 2 - (n // 2)
     end = len(image) // 2 + (n // 2)
     for i in range(start,end+1):
-        rows.append(image[i])
+        rows.append(img[i])
     return rows
-
-
-def is_horizontal(rows, color, minimum=50):
-    consecutive = 0
-    for row in rows:
-        for x in range(len(row)):
-            if row[x] == color:
-                consecutive += 1
-            else:
-                consecutive = 0
-            if consecutive == minimum:
-                return True
-    return False
-
-
-def orient(image):
-    rows = get_px_rows(image=image,n=3)
-    while not is_horizontal(rows=rows,color=0):
-        rotate_image(image=image,angle=1)
-    rotate_image(image=image,angle=90)
-    return image
 
 
 def rotate_image(image, angle):
@@ -130,23 +95,68 @@ def rotate_image(image, angle):
     result = cv.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv.INTER_LINEAR)
     return result
 
+###
 
-print("Making video device object...",end="")
-dev = cv.VideoCapture(0)
-print("DONE")
+def capture_image():
+    print("Making video device object...",end="")
+    dev = cv.VideoCapture(0)
+    print("DONE")
 
-print("Showing live feed...",end="")
-(x1,y1),(x2,y2) = showLiveFrame(device=dev,resolution=RESOLUTION)
-print("DONE")
+    print("Showing live feed...",end="")
+    (x1,y1),(x2,y2) = showLiveFrame(device=dev)
+    print("DONE")
 
-print("Capturing images...",end="")
-images = capture_images(dev,rpos=((x1,y1),(x2,y2)),n=3,resolution=RESOLUTION)
-print("DONE")
+    print("Capturing images...",end="")
+    capture_and_save_image(dev,rpos=((x1,y1),(x2,y2)),n=1)
+    print("DONE")
 
-print("Orienting images...")
-for i in range(len(images)):
-    images[i] = orient(images[i])
 
+
+
+"""
+img = cv.imread("0.png", cv.IMREAD_GRAYSCALE)
+
+
+#img = rotate_image(img, -90)
+img = cv.medianBlur(img, 5)
+
+(thresh, blackAndWhite) = cv.threshold(img, 127, 255, cv.THRESH_BINARY) 
+cv.imshow("ex", img)
+cv.imshow("ex2", blackAndWhite)
+"""
+
+
+
+### sobel, otsu, blur
+def sobel_demo():
+    cv.namedWindow("ex")
+    img = cv.imread("0.png", cv.IMREAD_GRAYSCALE)
+    img = cv.medianBlur(img, 5)
+    sobelx = cv.Sobel(img, cv.CV_64F, 1, 0, ksize=5)
+    #sobely = cv.Sobel(img, cv.CV_64F, 0, 1, ksize=5)
+    cv.imshow("ex", sobelx)
+    cv.waitKey(0)
+
+def process_image(img):
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    ret, thresh = cv.threshold(gray, 200, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    return thresh
+
+
+img = capture_image()
+img = cv.imread('0.png')
+#sobel_demo()
+thresh = process_image(img)
+cv.imshow("thresh", thresh )
+
+cv.waitKey(0)
+
+
+
+
+"""
+rows = get_px_rows(img,3)
+for row in rows:
+    print(row[40:60],"...",row[-60:-40])
 cv.waitKey(0)        
-
-
+"""
