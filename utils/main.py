@@ -1,6 +1,7 @@
 from cv_utils import device_init,show_live_frame,capture_images,get_px_rows
 
 N_PIXEL_ROWS = 3
+N_IMAGES = 3
 
 def run():
     print("Initializing video device...",end="")
@@ -12,7 +13,7 @@ def run():
     print("DONE")
 
     print("Capturing images...",end="")
-    images = capture_images(dev,rpos=((x1,y1),(x2,y2)),n=3)
+    images = capture_images(dev,rpos=((x1,y1),(x2,y2)),n=N_IMAGES)
     print("DONE")
 
     print(f"Selecting {N_PIXEL_ROWS} pixel rows...")
