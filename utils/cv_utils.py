@@ -15,7 +15,12 @@ RESOLUTION = (1280,720)
 CROP_RECTANGLE = (RESOLUTION[0]//2,RESOLUTION[1]//2)
 
 
-def showLiveFrame(device,resolution=RESOLUTION):
+def device_init():
+    dev = cv.VideoCapture(0)
+    return dev
+
+
+def show_live_frame(device,resolution=RESOLUTION):
     """
     Captures and a frame using a passed VideoCapture device and displays in a window.
     """
@@ -33,7 +38,7 @@ def showLiveFrame(device,resolution=RESOLUTION):
     except KeyboardInterrupt:
         cv.destroyAllWindows()
     finally:
-        print(f"Drew rectangle at ({x1},{y1}),({x2},{y2})")
+        #print(f"Drew rectangle at ({x1},{y1}),({x2},{y2})")
         return (x1,y1),(x2,y2)
 
 def capture_images(device:cv.VideoCapture, rpos, n=1, resolution=RESOLUTION):
@@ -53,7 +58,7 @@ def capture_images(device:cv.VideoCapture, rpos, n=1, resolution=RESOLUTION):
             #print(f"Cropping image to ({x1},{y1}),({x2},{y2})")
             img = cv.resize(img, resolution)
             img = img[y1:y2, x1:x2] #crop image
-            #img = process_image(img)
+            img = process_image(img)
             images.append(img)
             cv.imwrite(f"{counter}.png", img)
             counter += 1
@@ -123,20 +128,5 @@ def rotate_image(image, angle):
     image_center = tuple(np.array(image.shape[1::-1]) / 2)
     rot_mat = cv.getRotationMatrix2D(image_center, angle, 1.0)
     result = cv.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv.INTER_LINEAR)
-    return result
-
-
-print("Making video device object...",end="")
-dev = cv.VideoCapture(0)
-print("DONE")
-
-print("Showing live feed...",end="")
-(x1,y1),(x2,y2) = showLiveFrame(device=dev,resolution=RESOLUTION)
-print("DONE")
-
-print("Capturing images...",end="")
-images = capture_images(dev,rpos=((x1,y1),(x2,y2)),n=3,resolution=RESOLUTION)
-print("DONE")
-
-cv.waitKey(0)        
+    return result     
 
